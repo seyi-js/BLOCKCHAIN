@@ -1,0 +1,51 @@
+{
+    "apps": [
+      {
+        "exec_mode": "fork_mode",
+        "script": "./server.js",
+        "name": "NODE-1",
+        "node_args": [ "--harmony" ],
+        "watch": ["./server.js", "./config.json", "./blockchain.js"],
+        "env": {
+          "PORT": 4001        },
+        "error_file": "/var/www/logs/NODE-1.err.log",
+        "out_file": "/var/www/logs/NODE-1.out.log"
+      },
+      {
+        "exec_mode": "fork_mode",
+        "script": "./server.js",
+        "name": "NODE-2",
+        "node_args": [ "--harmony" ],
+        "watch": ["./server.js", "./config.json", "./blockchain.js"],
+        "env": {
+          "PORT": 4002
+        },
+        "error_file": "/var/www/logs/NODE-2.err.log",
+        "out_file": "/var/www/logs/NODE-2.out.log"
+      },
+      {
+        "exec_mode": "fork_mode",
+        "script": "./server.js",
+        "name": "NODE-3",
+        "node_args": [ "--harmony" ],
+        "watch": ["./server.js", "./config.json", "./blockchain.js","./test.js"],
+        "env": {
+          "PORT": 4003
+        },
+        "error_file": "/var/www/logs/NODE-3.err.log",
+        "out_file": "/var/www/logs/NODE-3.out.log"
+      },
+      {
+        "exec_mode": "fork_mode",
+        "script": "./server.js",
+        "name": "NODE-4",
+        "node_args": [ "--harmony" ],
+        "watch": ["./server.js", "./config.json", "./blockchain.js"],
+        "env": {
+          "PORT": 4004
+        },
+        "error_file": "/var/www/logs/NODE-4.err.log",
+        "out_file": "/var/www/logs/NODE-4.out.log"
+      }
+    ]
+  }

@@ -4,8 +4,20 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js 4000",
+    "dev": "nodemon server.js 4000",
+    "node_1": "node server.js 4001 http://localhost:4001",
+    "node_2": "node server.js 4002 http://localhost:4002",
+    "node_3": "node server.js 4003 http://localhost:4003",
+    "node_4": "node server.js 4004 http://localhost:4004"
   },
   "author": "SEYI-JS",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.9"
+  }
 }
