@@ -2,9 +2,10 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || process.argv[2];
 const { Blockchain } = require('./blockchain');
-const Crypto = require('crypto');
 const { default: axios } = require('axios');
-const test = require('./test')
+const test = require('./test');
+const EC = require('elliptic').ec
+const ec = new EC('secp256k1')
 const Blocks = new Blockchain();
 
 /*Middleware */
@@ -103,8 +104,13 @@ app.post('/transaction', (req, res) => {
 app.post('/transaction/broadcast', async (req, res) => {
 
     try {
-        const { amount, sender, recipient } = req.body;
-        const newTransaction = Blocks.createNewTransaction(amount, sender, recipient);
+        const { amount, sender, recipient, key } = req.body;
+        /* This step is not supposed to be carried out on the node */
+        const privatekey = ec.keyFromPrivate(key);
+        const walletAdrress = privatekey.getPublic('hex');
+        const newTransaction = Blocks.createNewTransaction(amount, walletAdrress, recipient,privatekey);
+
+        
 
         /*Add to pendingTransaction on this node */
         Blocks.addTransactionToPendingTransactions(newTransaction);

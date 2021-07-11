@@ -1,6 +1,10 @@
 const Crypto = require('crypto')
 const NodeURL = `http://localhost:${process.env.PORT}`;
 const NodeAddress = Crypto.randomBytes(120).toString('hex').toUpperCase()
+const EC = require('elliptic').ec
+const ec = new EC('secp256k1')
+
+
 
 class Blockchain {
     constructor() {
@@ -38,10 +42,15 @@ class Blockchain {
 
 
 
-    createNewTransaction(amount, sender, recipient) {
+
+    /* This block Should be handled by the wallet or exhange company */
+    createNewTransaction(amount, sender, recipient,key) {
+
+        if(!amount || !sender || !recipient){
+            throw new Error('Amount, sender, recipient reqquried.')
+        }
 
         //TODO
-        //VERIFY THAT THE SENDER HAS ENOUGH OF THIS MONEY BEFORE ACCEPTING, BY CALCULATING ALL TRANSACTIONS ASSOCIATED WITH THE ADDRESS.
         const newTransaction = {
             transaction_id: Crypto.randomBytes(10).toString('hex'),
             timestamp: Date.now(),
@@ -50,11 +59,63 @@ class Blockchain {
             recipient
         };
 
-        return newTransaction;
+        let transaction = this.signTransaction(key,newTransaction)
+
+        return transaction;
 
     };
 
+
+    /* This block Should be handled by the wallet or exhange company */
+    signTransaction(key, transaction) {
+
+        if (key.getPublic('hex') !== transaction.sender) {
+            throw new Error('You cannot sign transaction for a different wallet.')
+        }
+        const hash = this.hashTransaction(transaction);
+        const sig = key.sign(hash, 'base64');
+        transaction.signature = sig.toDER('hex');
+
+        return transaction;
+
+    };
+
+    /* This block Should be handled by the wallet or exhange company */
+    hashTransaction(transaction) {
+        const data = JSON.stringify(transaction);
+        let hash = Crypto.createHash('sha256').update(data).digest('hex').toUpperCase();
+
+        return hash;
+
+    };
+
+
+    
+
+    
+
+
+    isTransactionValid(transaction){
+
+        if(transaction.sender == '00') return true; // It's a mining reward.
+        if(!transaction.signature || !transaction.sender || !transaction.amount || !transaction.recipient) return false;
+
+        
+        
+
+        const publicKey = ec.keyFromPublic(transaction.sender, 'hex');//Generate key from public key
+        let signature = transaction.signature
+        transaction.signature = undefined;//Since it wasn't part of the hashed item, it needs to be removed.
+        return publicKey.verify(this.hashTransaction(transaction),signature);//Verify Key
+
+    };
+
+
+    //VERIFY THAT THE SENDER HAS ENOUGH OF THIS MONEY BEFORE ACCEPTING, BY CALCULATING ALL TRANSACTIONS ASSOCIATED WITH THE ADDRESS.
+
     addTransactionToPendingTransactions(transaction) {
+
+        if(!this.isTransactionValid(transaction)) throw new Error('Cannot add an invalid transaction.')
         this.pendingTransactions.push(transaction);
 
         return this.getLastBlock()['index'] + 1;
@@ -81,6 +142,19 @@ class Blockchain {
     };
 
 
+    blockTransactionsAreValid(transactions){
+        for(var i = 0; i < transactions.length; i++){
+            if(!this.isTransactionValid(transactions[i])){
+                return false
+            };
+
+            
+        };
+
+        return true;
+
+    };
+
     chainIsValid(blockchain) {
 
         let validChain = true;
@@ -96,7 +170,7 @@ class Blockchain {
                 validChain = false;
                 break;
 
-            }
+            };
 
             if (currentBlock['previousBlockHash'] !== previousBlock['hash']) {
 
@@ -105,6 +179,12 @@ class Blockchain {
                 validChain = false;
                 break;
 
+            };
+
+            /*Validate the transactions in the block */
+            if(!this.blockTransactionsAreValid(currentBlock['transactions'])){
+                validChain = false;
+                break;
             }
 
 
